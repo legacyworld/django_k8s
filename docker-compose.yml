@@ -1,0 +1,22 @@
+version: '3'
+services:
+
+  django:
+    image: legacyworld/django_k8s_django
+    build:
+      context: ./mybook30
+      dockerfile: Dockerfile
+    container_name: django
+    ports:
+      - 8000:8000
+    stdin_open: true
+    tty: true
+
+  nginx:
+    image: legacyworld/django_k8s_nginx
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx
+    ports:
+      - 80:80
