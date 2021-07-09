@@ -5,11 +5,6 @@ WORKDIR /src
 ADD ./ /src/
 RUN pip3 install -r requirements.txt
 
-RUN apt update \
-  && apt install -y libpq5 libxml2 \
-  && apt-get clean \
-  && rm -rf /var/lib/apt/lists/*
-
 RUN mkdir db
 RUN chmod 777 db
 RUN python manage.py collectstatic
