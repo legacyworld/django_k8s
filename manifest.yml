@@ -1,0 +1,99 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+    name: static-pvc
+spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+        requests:
+            storage: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 80
+    protocol: TCP
+  selector:
+    run: web
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-deploy
+spec:
+  selector:
+    matchLabels:
+      run: web
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: web
+    spec:
+      containers:
+      - name: nginx
+        image: legacyworld/django_k8s_nginx:latest
+        env:
+        - name: PORT
+          value: "80"
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: static
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: static
+        persistentVolumeClaim:
+          claimName: static-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: django
+spec:
+  type: NodePort
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+  selector:
+    run: django
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: django-deploy
+spec:
+  selector:
+    matchLabels:
+      run: django
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        run: django
+    spec:
+      containers:
+      - name: django
+        image: legacyworld/django_k8s_django:latest
+        volumeMounts:
+        - name: static
+          mountPath: /mnt
+        lifecycle:
+          postStart:
+            exec:
+              command: ["cp", "-r", "/src/static", "/mnt"]
+      securityContext:
+        fsGroup: 999
+      volumes:
+      - name: static
+        persistentVolumeClaim:
+          claimName: static-pvc
