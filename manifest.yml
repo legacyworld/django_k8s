@@ -58,7 +58,7 @@ spec:
         - containerPort: 80
         volumeMounts:
         - name: static
-          mountPath: /usr/share/nginx/html
+          mountPath: /usr/share/nginx/html/static
       volumes:
       - name: static
         persistentVolumeClaim:
