@@ -9,6 +9,17 @@ spec:
         requests:
             storage: 1Gi
 ---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+    name: db
+spec:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+        requests:
+            storage: 1Gi
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -86,14 +97,21 @@ spec:
         image: legacyworld/django_k8s_django:latest
         volumeMounts:
         - name: static
-          mountPath: /mnt
+          mountPath: /src/static
+        - name: db
+          mountPath: /src/db
         lifecycle:
           postStart:
             exec:
-              command: ["cp", "-r", "/src/static", "/mnt"]
+              command: ["sh","-c","python manage.py collectstatic --noinput \
+              && python manage.py migrate"]
+              
       securityContext:
         fsGroup: 999
       volumes:
       - name: static
         persistentVolumeClaim:
           claimName: static-pvc
+      - name: db
+        persistentVolumeClaim:
+          claimName: db

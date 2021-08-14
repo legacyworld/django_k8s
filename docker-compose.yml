@@ -7,10 +7,6 @@ services:
       context: ./mybook30
       dockerfile: Dockerfile
     container_name: django
-    ports:
-      - 8000:8000
-    stdin_open: true
-    tty: true
 
   nginx:
     image: legacyworld/django_k8s_nginx
@@ -18,5 +14,3 @@ services:
       context: ./nginx
       dockerfile: Dockerfile
     container_name: nginx
-    ports:
-      - 80:80
